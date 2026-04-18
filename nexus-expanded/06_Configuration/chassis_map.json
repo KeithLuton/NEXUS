@@ -1,0 +1,83 @@
+{
+  "chassis_id": "Self",
+  "zones": [
+    {
+      "zone_id": 0,
+      "name": "CPU_Zone_A",
+      "actuators": [
+        {
+          "redfish_id": "Fan1",
+          "type": "Fan",
+          "physical_location": "CPU Socket 0"
+        }
+      ]
+    },
+    {
+      "zone_id": 1,
+      "name": "CPU_Zone_B",
+      "actuators": [
+        {
+          "redfish_id": "Fan2",
+          "type": "Fan",
+          "physical_location": "CPU Socket 1"
+        }
+      ]
+    },
+    {
+      "zone_id": 2,
+      "name": "GPU_Zone_A",
+      "actuators": [
+        {
+          "redfish_id": "Fan3",
+          "type": "Fan",
+          "physical_location": "GPU Card 1"
+        }
+      ]
+    },
+    {
+      "zone_id": 3,
+      "name": "GPU_Zone_B",
+      "actuators": [
+        {
+          "redfish_id": "Fan4",
+          "type": "Fan",
+          "physical_location": "GPU Card 2"
+        }
+      ]
+    },
+    {
+      "zone_id": 4,
+      "name": "Memory_Zone",
+      "actuators": [
+        {
+          "redfish_id": "Fan5",
+          "type": "Fan",
+          "physical_location": "Memory DIMM array"
+        }
+      ]
+    },
+    {
+      "zone_id": 5,
+      "name": "System_Zone",
+      "actuators": [
+        {
+          "redfish_id": "Fan6",
+          "type": "Fan",
+          "physical_location": "Chassis exhaust"
+        }
+      ]
+    }
+  ],
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "thermal_safety_threshold": 95,
+    "control_loop_target_ms": 25
+  },
+  "trial_info": {
+    "version": "3.0",
+    "expiration_date": "2026-05-01",
+    "max_zones": 32,
+    "max_actuators_per_zone": 4
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "_vendor": "OpenBMC (ASPEED AST2600 — OCP, Facebook, Google, Intel reference platforms)",
+  "_redfish_version": "1.5+",
+  "_notes": "OpenBMC exposes full Redfish including EventService SSE. Fan IDs vary by platform.",
+
+  "chassis_id": "chassis",
+
+  "zones": [
+    {
+      "zone_id": 0, "name": "CPU_Zone",
+      "actuators": [
+        {"redfish_id": "fan0", "type": "Fan", "physical_location": "CPU area"},
+        {"redfish_id": "fan1", "type": "Fan", "physical_location": "CPU area"}
+      ]
+    },
+    {
+      "zone_id": 1, "name": "IO_Zone",
+      "actuators": [
+        {"redfish_id": "fan2", "type": "Fan", "physical_location": "IO area"},
+        {"redfish_id": "fan3", "type": "Fan", "physical_location": "IO area"}
+      ]
+    },
+    {
+      "zone_id": 2, "name": "Exhaust_Zone",
+      "actuators": [
+        {"redfish_id": "fan4", "type": "Fan", "physical_location": "Exhaust"},
+        {"redfish_id": "fan5", "type": "Fan", "physical_location": "Exhaust"}
+      ]
+    }
+  ],
+
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "thermal_safety_threshold": 90,
+    "control_loop_target_ms": 25,
+    "temp_scale_min_c": 20.0,
+    "temp_scale_max_c": 95.0,
+    "cpu_power_ceiling_w": 350.0,
+    "gpu_power_ceiling_w": 700.0
+  },
+
+  "enabled_inputs":  {"redfish": true, "hwmon": true, "nvidia_nvml": true, "nvme": true},
+  "enabled_outputs": {"redfish_fan": true},
+
+  "redfish_events": {
+    "subscribe_sse": true,
+    "subscribe_push": false,
+    "webhook_port": 9100,
+    "webhook_host": ""
+  }
+}

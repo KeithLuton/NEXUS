@@ -1,0 +1,53 @@
+{
+  "_vendor": "Supermicro X12/X13 (IPMI 2.0 + Redfish)",
+  "_redfish_version": "1.2+",
+  "_notes": "Supermicro uses numeric fan IDs. IPMI raw fan control available as fallback.",
+  "_ipmi_manual_mode": "ipmitool raw 0x30 0x45 0x01 0x01",
+
+  "chassis_id": "Self",
+
+  "zones": [
+    {
+      "zone_id": 0, "name": "CPU_Zone_A",
+      "actuators": [
+        {"redfish_id": "FAN1", "type": "Fan", "physical_location": "CPU 1"},
+        {"redfish_id": "FAN2", "type": "Fan", "physical_location": "CPU 1"}
+      ]
+    },
+    {
+      "zone_id": 1, "name": "CPU_Zone_B",
+      "actuators": [
+        {"redfish_id": "FAN3", "type": "Fan", "physical_location": "CPU 2"},
+        {"redfish_id": "FAN4", "type": "Fan", "physical_location": "CPU 2"}
+      ]
+    },
+    {
+      "zone_id": 2, "name": "Peripheral_Zone",
+      "actuators": [
+        {"redfish_id": "FANA", "type": "Fan", "physical_location": "Peripheral zone"},
+        {"redfish_id": "FANB", "type": "Fan", "physical_location": "Peripheral zone"}
+      ]
+    }
+  ],
+
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "thermal_safety_threshold": 85,
+    "control_loop_target_ms": 25,
+    "temp_scale_min_c": 20.0,
+    "temp_scale_max_c": 95.0,
+    "cpu_power_ceiling_w": 400.0,
+    "gpu_power_ceiling_w": 700.0
+  },
+
+  "enabled_inputs":  {"redfish": true, "ipmi": true, "hwmon": true, "nvidia_nvml": true, "nvme": true},
+  "enabled_outputs": {"redfish_fan": true, "ipmi_fan": true},
+
+  "ipmi": {
+    "ipmi_vendor": "supermicro",
+    "ipmi_host": "",
+    "ipmi_user": "ADMIN",
+    "ipmi_password": ""
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "_vendor": "HPE iLO 5 (ProLiant DL360/DL380/DL580 Gen10, Gen10 Plus)",
+  "_redfish_version": "1.6+",
+  "_notes": "iLO 5 uses Redfish for all fan control. Fan IDs are numeric strings.",
+
+  "chassis_id": "1",
+
+  "zones": [
+    {
+      "zone_id": 0, "name": "CPU_Zone_A",
+      "actuators": [
+        {"redfish_id": "Fan1",  "type": "Fan", "physical_location": "CPU 1 area"},
+        {"redfish_id": "Fan2",  "type": "Fan", "physical_location": "CPU 1 area"}
+      ]
+    },
+    {
+      "zone_id": 1, "name": "CPU_Zone_B",
+      "actuators": [
+        {"redfish_id": "Fan3",  "type": "Fan", "physical_location": "CPU 2 area"},
+        {"redfish_id": "Fan4",  "type": "Fan", "physical_location": "CPU 2 area"}
+      ]
+    },
+    {
+      "zone_id": 2, "name": "Memory_Zone",
+      "actuators": [
+        {"redfish_id": "Fan5",  "type": "Fan", "physical_location": "DIMM area"}
+      ]
+    },
+    {
+      "zone_id": 3, "name": "System_Zone",
+      "actuators": [
+        {"redfish_id": "Fan6",  "type": "Fan", "physical_location": "System"},
+        {"redfish_id": "Fan7",  "type": "Fan", "physical_location": "System"}
+      ]
+    }
+  ],
+
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "thermal_safety_threshold": 90,
+    "control_loop_target_ms": 25,
+    "temp_scale_min_c": 20.0,
+    "temp_scale_max_c": 95.0,
+    "cpu_power_ceiling_w": 400.0,
+    "gpu_power_ceiling_w": 700.0
+  },
+
+  "enabled_inputs":  {"redfish": true, "hwmon": true, "nvidia_nvml": true, "nvme": true},
+  "enabled_outputs": {"redfish_fan": true},
+
+  "ipmi": {"ipmi_vendor": "hpe"}
+}

@@ -1,0 +1,43 @@
+{
+  "_vendor": "Generic Redfish CDU (CoolingUnit schema, DSP0274)",
+  "_notes": "Use this as a base for any CDU with Redfish ThermalEquipment support. Tested with Asetek RackCDU, CoolIT ECL, and Iceotope KU.",
+
+  "chassis_id": "Self",
+  "zones": [
+    {
+      "zone_id": 0, "name": "CPU_Liquid_Zone",
+      "actuators": [
+        {"redfish_id": "Pump1", "type": "Pump", "physical_location": "CPU cold plate loop"}
+      ]
+    },
+    {
+      "zone_id": 1, "name": "GPU_Liquid_Zone",
+      "actuators": [
+        {"redfish_id": "Pump2", "type": "Pump", "physical_location": "GPU cold plate loop"}
+      ]
+    }
+  ],
+
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "min_pump_pct": 30,
+    "max_pump_pct": 100,
+    "thermal_safety_threshold": 95,
+    "control_loop_target_ms": 25,
+    "temp_scale_min_c": 20.0,
+    "temp_scale_max_c": 90.0,
+    "cpu_power_ceiling_w": 400.0,
+    "gpu_power_ceiling_w": 700.0
+  },
+
+  "enabled_inputs":  {"redfish": true, "hwmon": true, "nvidia_nvml": true},
+  "enabled_outputs": {"redfish_fan": true, "redfish_cdu": true},
+
+  "liquid_cooling": {
+    "enabled": true,
+    "cdu_type": "redfish",
+    "min_pump_pct": 30,
+    "max_pump_pct": 100
+  }
+}

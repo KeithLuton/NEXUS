@@ -1,0 +1,86 @@
+{
+  "vendor": "TEMPLATE — Copy and customize this for your hardware",
+  "model": "ServerX 2024 (example)",
+  "release_date": "2024-01-01",
+  "bmc_type": "redfish",
+  "api_version": "1.8.0",
+  "form_factor": "2U",
+  "max_processors": 2,
+  "max_memory_gb": 768,
+  "max_gpus": 4,
+  "psu_count": 2,
+  "fan_count": 8,
+
+  "description": "Template for adding your hardware. See CONTRIBUTING.md for details.",
+
+  "chassis_info": {
+    "redfish_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1",
+    "thermal_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Thermal",
+    "power_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Power"
+  },
+
+  "thermal_zones": [
+    {
+      "zone_id": "cpu0",
+      "zone_name": "CPU 0 Thermal Zone",
+      "sensor_type": "temperature",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Sensors/CPU0_Temp_1",
+        "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Sensors/CPU0_Temp_2"
+      ],
+      "alert_threshold_c": 85,
+      "critical_threshold_c": 95,
+      "pwm_control_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Fans/Fan_CPU0_PWM",
+      "pwm_min_percent": 20,
+      "pwm_max_percent": 100,
+      "thermal_profile": "dynamic",
+      "solver_slot": 0
+    },
+    {
+      "zone_id": "memory",
+      "zone_name": "Memory Thermal Zone",
+      "sensor_type": "temperature",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Sensors/DIMM_Temp"
+      ],
+      "alert_threshold_c": 75,
+      "critical_threshold_c": 85,
+      "pwm_control_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Fans/Fan_Memory_PWM",
+      "pwm_min_percent": 15,
+      "pwm_max_percent": 80,
+      "thermal_profile": "conservative",
+      "solver_slot": 1
+    }
+  ],
+
+  "power_supplies": {
+    "sensor_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/PowerSupplies",
+    "count": 2,
+    "redundancy_required": true
+  },
+
+  "fans": {
+    "sensor_path": "/redfish/v1/Chassis/System.Embedded.1-Chassis-1/Fans",
+    "speed_reporting": true,
+    "pwm_control": true
+  },
+
+  "liquid_cooling": {
+    "enabled": false,
+    "cdu_type": "none",
+    "cdu_config_file": null
+  },
+
+  "network_interfaces": {
+    "bmc_speed_mbps": 1000,
+    "data_network_speed_mbps": 10000,
+    "bmc_vlan": null
+  },
+
+  "validated_with": {
+    "nexus_version": "4.0.0",
+    "validated_date": "2024-01-01",
+    "contributed_by": "community",
+    "testing_notes": "Template example, not production tested"
+  }
+}

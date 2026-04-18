@@ -1,0 +1,66 @@
+name: Validate NEXUS Configuration
+
+on:
+  pull_request:
+    paths:
+      - 'config/vendors/**'
+      - 'liquid-cooling/configs/**'
+      - 'core/**'
+      - 'infrastructure/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install jsonschema pytest
+      
+      - name: Validate JSON schemas
+        run: |
+          python tools/validate_v4.py --validate-configs config/vendors/
+          python tools/validate_v4.py --validate-configs liquid-cooling/configs/
+      
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/ -v --tb=short
+      
+      - name: Lint Python code
+        run: |
+          pip install flake8 black
+          black --check core/ infrastructure/ metrics/
+          flake8 core/ infrastructure/ metrics/ --max-line-length=100
+      
+      - name: Comment on PR
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ All validation checks passed!\n\n- JSON schemas valid\n- Configuration loadable\n- Tests pass\n- Code linting OK'
+            })
+      
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Validation failed. Review logs above for details.'
+            })

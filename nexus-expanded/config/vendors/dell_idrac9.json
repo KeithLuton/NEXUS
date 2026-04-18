@@ -1,0 +1,60 @@
+{
+  "_vendor": "Dell iDRAC 9 (PowerEdge R640, R740, R750, R840, R940)",
+  "_redfish_version": "1.6+",
+  "_notes": "iDRAC 9 exposes fan control via Controls endpoint. Manual fan mode must be enabled.",
+  "_manual_fan_enable": "ipmitool raw 0x30 0x30 0x01 0x00",
+
+  "chassis_id": "System.Embedded.1",
+
+  "zones": [
+    {
+      "zone_id": 0, "name": "CPU_Zone_A",
+      "actuators": [
+        {"redfish_id": "Fan.Embedded.1A", "type": "Fan", "physical_location": "CPU 1"},
+        {"redfish_id": "Fan.Embedded.2A", "type": "Fan", "physical_location": "CPU 1"}
+      ]
+    },
+    {
+      "zone_id": 1, "name": "CPU_Zone_B",
+      "actuators": [
+        {"redfish_id": "Fan.Embedded.3A", "type": "Fan", "physical_location": "CPU 2"},
+        {"redfish_id": "Fan.Embedded.4A", "type": "Fan", "physical_location": "CPU 2"}
+      ]
+    },
+    {
+      "zone_id": 2, "name": "GPU_Zone",
+      "actuators": [
+        {"redfish_id": "Fan.Embedded.5A", "type": "Fan", "physical_location": "GPU"},
+        {"redfish_id": "Fan.Embedded.6A", "type": "Fan", "physical_location": "GPU"}
+      ]
+    },
+    {
+      "zone_id": 3, "name": "System_Exhaust",
+      "actuators": [
+        {"redfish_id": "Fan.Embedded.7A", "type": "Fan", "physical_location": "Exhaust"},
+        {"redfish_id": "Fan.Embedded.8A", "type": "Fan", "physical_location": "Exhaust"}
+      ]
+    }
+  ],
+
+  "constraints": {
+    "min_fan_pwm": 20,
+    "max_fan_pwm": 100,
+    "thermal_safety_threshold": 90,
+    "control_loop_target_ms": 25,
+    "temp_scale_min_c": 20.0,
+    "temp_scale_max_c": 95.0,
+    "cpu_power_ceiling_w": 400.0,
+    "gpu_power_ceiling_w": 700.0
+  },
+
+  "enabled_inputs":  {"redfish": true, "ipmi": true, "hwmon": true, "nvidia_nvml": true, "nvme": true},
+  "enabled_outputs": {"redfish_fan": true, "ipmi_fan": true},
+
+  "ipmi": {
+    "ipmi_vendor": "dell",
+    "ipmi_host": "",
+    "ipmi_user": "root",
+    "ipmi_password": ""
+  }
+}
