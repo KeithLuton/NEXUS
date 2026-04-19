@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+.tox/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# NEXUS runtime state
+nexus_state/
+*_history.json
+*_history.json.tmp
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

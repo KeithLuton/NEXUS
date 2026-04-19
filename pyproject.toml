@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nexus-orchestrator"
+version = "5.1.0"
+description = "Thermal orchestration engine with LFM safety core for Redfish-managed hardware"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Keith Luton" }]
+keywords = ["thermal", "orchestration", "bmc", "redfish", "hpc", "datacenter"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Hardware",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = []
+
+[project.optional-dependencies]
+redfish = ["redfish>=3.0.0"]
+test = ["pytest>=7.0.0"]
+
+[project.scripts]
+nexus-orchestrator = "nexus.orchestrator:main"
+
+[project.urls]
+Homepage = "https://github.com/KeithLuton/NEXUS"
+Issues = "https://github.com/KeithLuton/NEXUS/issues"
+
+[tool.setuptools.packages.find]
+include = ["nexus*"]
+exclude = ["tests*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

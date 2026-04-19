@@ -1,174 +1,210 @@
-# NEXUS v4.0 — Intelligent Thermal Orchestration Engine
+# NEXUS v5.1 — Thermal Orchestrator with LFM Safety Core
 
+[![tests](https://github.com/KeithLuton/NEXUS/actions/workflows/tests.yml/badge.svg)](https://github.com/KeithLuton/NEXUS/actions/workflows/tests.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/downloads/)
-[![Redfish](https://img.shields.io/badge/Redfish-native-orange.svg)](docs/redfish_compatibility.md)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-ready-blueviolet.svg)](integrations/kubernetes/helm)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-green.svg)](https://www.python.org/downloads/)
 
-Intelligent thermal orchestration for hyperscale, HPC, and liquid-cooled
-infrastructure. NEXUS reads BMC thermal telemetry over Redfish, maintains
-a live view of per-zone thermal headroom across a fleet, and feeds
-placement decisions to Kubernetes, SLURM, or a standalone scheduler.
+A thermal control orchestrator for Redfish-managed servers. Reads temperatures,
+compares observed behavior to a predictor, and drives fan PWM through a
+three-layer safety architecture: **invariant → arbitration → actuation**.
 
-> **Status:** early. The Redfish validator and orchestrator core are
-> working skeletons. Scheduler adapters and predictive thermal modeling
-> are in progress. Contributions welcome.
+> **Project status:** Beta. The safety core, predictor, persistence, rate
+> limiting, and mock runtime all work and are covered by 49 unit and
+> integration tests. Real-BMC validation against iDRAC / iLO / OpenBMC is in
+> progress — see [Hardware status](#hardware-status).
 
-## What NEXUS does
+## What it does
 
-- **Redfish-native BMC reads** — Works with any BMC exposing Redfish 1.0+
-  (iDRAC 9, iLO 5, XCC/XCC2, OpenBMC, MegaRAC, Insyde OpenEdition, and
-  generic Redfish).
-- **Thermal routing** — Assigns workloads to chassis based on per-zone
-  thermal headroom.
-- **Liquid cooling aware** — Discovers CDUs via the Redfish
-  `ThermalEquipment` endpoint (Redfish 2023.1+).
-- **32-slot solver engine** — Parallel workload placement with bounded
-  latency. See [vector slot map](docs/vector_slot_map.md).
-- **Kubernetes & SLURM adapters** — DaemonSet + Helm chart, SLURM prolog.
-- **Open hardware config database** — Contribute your BMC/model as a
-  simple JSON file.
+- **Polls BMC thermal sensors** over Redfish (DMTF DSP0266). Vendor-agnostic.
+- **Predicts** expected temperature using an exponential moving average.
+- **Detects divergence** between observed and predicted, with streak tracking
+  to avoid tripping on single outliers.
+- **Makes a state decision** (NOMINAL / INVALID / FAULT / RECOVERY) using a
+  priority-ordered state machine.
+- **Enforces physical limits** through a bus-bar constraint solver that can
+  override the state machine if power or temperature exceeds configured caps.
+- **Drives fan PWM** through a rate-limited actuator with a configurable
+  minimum dwell time, so fan settings don't thrash.
+- **Persists history** atomically to disk so restarts resume cleanly and
+  invariants carry across crashes.
+
+## Architecture
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    Sensor Reader (Redfish)                 │
+│              reads temperatures from BMC sensors           │
+└───────────────────────────┬────────────────────────────────┘
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                       Predictor (EMA)                      │
+│          produces expected temperature for comparison      │
+└───────────────────────────┬────────────────────────────────┘
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                    Invariant Layer (pure)                  │
+│   divergence, gradient, confidence, oscillation detect     │
+└───────────────────────────┬────────────────────────────────┘
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                     Arbitration Layer                      │
+│     state machine: NOMINAL / INVALID / FAULT / RECOVERY    │
+└───────────────────────────┬────────────────────────────────┘
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                 Bus-Bar Constraint Solver                  │
+│      enforces max power and max temperature envelopes      │
+└───────────────────────────┬────────────────────────────────┘
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│                 Rate-Limited Actuator                      │
+│       writes fan PWM via Redfish, with dwell debounce      │
+└────────────────────────────────────────────────────────────┘
+```
 
 ## Quick start
 
-### 1. Clone & install
+### Requirements
+
+- Python 3.9+
+- (Optional) Access to a Redfish-compliant BMC
+
+### Install
 
 ```bash
 git clone https://github.com/KeithLuton/NEXUS.git
 cd NEXUS
-./setup.sh  # Linux/macOS
-# OR
-setup.bat   # Windows
+pip install -e ".[test]"
 ```
 
-### 2. Validate your hardware
+The `redfish` extra is optional — if not installed, NEXUS falls back to a
+deterministic mock sensor so you can try everything end-to-end without real
+hardware:
 
 ```bash
-source .venv/bin/activate
-python tools/validate_v4.py --target 192.168.1.100 --user root --pass password
+pip install -e ".[test,redfish]"   # with Redfish client
 ```
 
-Example output against an iDRAC-based Dell PowerEdge:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- NEXUS v4.0 — Validating 192.168.1.100
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[✓] BMC detected: iDRAC (PowerEdge)
-[✓] 32 thermal sensors mapped
-[✓] GPU/accelerator thermal zones identified: 3
-[✓] BMC network interfaces: 1
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[✓] Ready for deployment
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### 3. Deploy
-
-**Standalone (simplest):**
+### Run the tests
 
 ```bash
-python core/nexus_orchestrator_v4.py --config config/chassis_map_template.json
+pytest
 ```
 
-**Kubernetes:**
+Expected: **49 passed**.
+
+### Run the orchestrator against the mock sensor
 
 ```bash
-helm install nexus ./integrations/kubernetes/helm/ \
-  --set bmc.target=192.168.1.100 \
-  --set bmc.username=root \
-  --set bmc.password=<password>
+python -m nexus.orchestrator \
+  --config examples/mock-chassis.json \
+  --state-dir ./nexus_state \
+  --max-ticks 5
 ```
 
-**SLURM:**
+Expected output (one JSON snapshot per tick):
 
-```bash
-cp integrations/slurm/nexus_slurm_prolog.sh /etc/slurm/prolog.d/
-systemctl restart slurmctld
+```
+2026-04-19 10:15:02,371 INFO nexus: NEXUS orchestrator starting: 1 chassis, poll interval 1.0s
+2026-04-19 10:15:02,372 INFO nexus: snapshot {"tick": 0, "chassis_id": "mock-chassis-01", "state": "NOMINAL", ...}
+2026-04-19 10:15:03,374 INFO nexus: snapshot {"tick": 1, "chassis_id": "mock-chassis-01", "state": "NOMINAL", ...}
+...
 ```
 
-## Hardware support
+Stop it any time with `Ctrl+C` — shutdown is graceful and history is saved.
 
-NEXUS ships vendor config **templates** for common BMC families. These
-are starting points — sensor path names differ between firmware revisions
-and specific models, so always run `validate_v4.py` against your
-hardware first and adjust the template to match. Once you have a
-working config, a PR to `config/vendors/` is appreciated.
+### Point it at a real BMC
 
-| BMC family       | Config template                                    | Status   |
-|------------------|----------------------------------------------------|----------|
-| Dell iDRAC 9     | [`dell_idrac9.json`](config/vendors/dell_idrac9.json) | template |
-| HPE iLO 5        | [`hpe_ilo5.json`](config/vendors/hpe_ilo5.json)    | template |
-| Supermicro X12/X13 | [`supermicro_x12.json`](config/vendors/supermicro_x12.json) | template |
-| Lenovo XCC2      | [`lenovo_xcc2.json`](config/vendors/lenovo_xcc2.json) | template |
-| OpenBMC AST2600  | [`openbmc_ast2600.json`](config/vendors/openbmc_ast2600.json) | template |
-| Insyde OpenEdition | [`insyde_openedition.json`](config/vendors/insyde_openedition.json) | template |
-| AMI MegaRAC SP-X | [`ami_megarac.json`](config/vendors/ami_megarac.json) | template |
-| Generic Redfish 1.0+ | [`generic_redfish.json`](config/vendors/generic_redfish.json) | fallback |
-
-**Don't see your hardware?** [Open a vendor support request](../../issues/new?template=vendor_support_request.md)
-with your Redfish output and we'll add a template for it.
-
-## Documentation
-
-- [Architecture](docs/architecture.md) — How the pieces fit together
-- [Vector slot map](docs/vector_slot_map.md) — What the 32 solver slots are for
-- [Redfish compatibility](docs/redfish_compatibility.md) — Which endpoints NEXUS reads
-- [Liquid cooling](docs/liquid_cooling.md) — CDU setup
-- [IP & licensing notice](docs/ip_notice.md) — License details
-
-## Contributing a hardware config (5 minutes)
-
-1. Run validation and save the output:
-
+1. Create `my-rack.json` from `examples/mock-chassis.json`, replacing `bmc_host`
+   with your BMC's IP, and `bmc_user` / `bmc_password` with real credentials.
+2. Find your Redfish sensor paths:
    ```bash
-   python tools/validate_v4.py --target YOUR_BMC_IP --user root --pass password --json > your_redfish_dump.json
+   curl -k -u root:yourpass https://<bmc-ip>/redfish/v1/Chassis/1/Thermal
+   ```
+3. Put those paths into `sensor_paths` / `pwm_path` in your config.
+4. Run:
+   ```bash
+   python -m nexus.orchestrator --config my-rack.json --state-dir /var/lib/nexus
    ```
 
-2. Create `config/vendors/your_vendor_model.json`:
+## Configuration
 
-   ```json
-   {
-     "vendor": "Your Company",
-     "model": "ServerX-2024",
-     "bmc_type": "redfish",
-     "api_version": "1.8.0",
-     "status": "verified",
-     "thermal_zones": [
-       {
-         "zone_id": "cpu_zone",
-         "sensor_paths": ["/redfish/v1/Chassis/1/Sensors/CPU0_Temp"],
-         "pwm_path": "/redfish/v1/Chassis/1/Sensors/CPU0_PWM",
-         "thermal_profile": "balanced"
-       }
-     ]
-   }
-   ```
+See `examples/mock-chassis.json`. All fields:
 
-3. Open a PR including your JSON and the Redfish dump from step 1.
+```json
+{
+  "poll_interval_s": 30,
+  "chassis": [
+    {
+      "chassis_id": "rack01-chassis01",
+      "bmc_host": "192.168.1.100",
+      "bmc_user": "root",
+      "bmc_password": "secret",
+      "thermal_zones": [
+        {
+          "zone_id": "primary",
+          "sensor_paths": ["/redfish/v1/Chassis/1/Sensors/CPU0_Temp"],
+          "pwm_path": "/redfish/v1/Chassis/1/Sensors/CPU0_PWM",
+          "thermal_profile": "balanced"
+        }
+      ]
+    }
+  ]
+}
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+`thermal_profile` accepts `balanced`, `aggressive`, or `quiet`. See
+`docs/vector_slot_map.md` for semantics.
+
+## Hardware status
+
+NEXUS speaks standard Redfish, so it should work against any BMC exposing
+Redfish 1.0+. The code has been validated against the following:
+
+| BMC family       | Mock | Real hardware | Notes                       |
+|------------------|------|---------------|-----------------------------|
+| Deterministic mock | ✓   | n/a           | Ships with the repo         |
+| Dell iDRAC 9     | ✓   | in progress   | Report issues with output   |
+| HPE iLO 5        | ✓   | not tested    |                             |
+| OpenBMC AST2600  | ✓   | not tested    |                             |
+| Generic Redfish  | ✓   | not tested    |                             |
+
+Have a BMC to test against? Please
+[open an issue](https://github.com/KeithLuton/NEXUS/issues/new) with your
+Redfish output so we can confirm and add your hardware to the table.
+
+## Project layout
+
+```
+nexus/
+├── arbitration.py      # State enums + policy data types. No dependencies.
+├── telemetry.py        # DivergenceMetrics, Telemetry, Predictor, SensorReader
+├── history.py          # Persistent History with atomic save
+├── invariant.py        # Pure predicates + spigot_transition
+├── bus_bar.py          # Physical-limit constraint solver
+├── actuator.py         # Rate-limited fan PWM writer
+└── orchestrator.py     # Main loop (CLI entry point)
+
+tests/
+├── test_arbitration.py # covered by test_invariant
+├── test_bus_bar.py     # constraint solver
+├── test_history.py     # persistence round-trip + corruption recovery
+├── test_invariant.py   # every pure predicate + state machine
+├── test_actuator.py    # rate limiting + deferred commits
+├── test_predictor.py   # EMA correctness
+└── test_orchestrator.py # end-to-end smoke + restart regression
+
+examples/
+└── mock-chassis.json   # runnable mock config
+```
 
 ## Licensing
 
-All open-source components are [Apache 2.0](LICENSE). See the
-[IP notice](docs/ip_notice.md) for details on the "FreewareLayer"
-terminology and the optional commercial license.
+Apache 2.0 — see [LICENSE](LICENSE). Contributions welcome under the same
+license by default.
 
-## Trademarks
+## Acknowledgments
 
-Redfish is a trademark of the Distributed Management Task Force (DMTF).
-Dell, iDRAC, HPE, iLO, Lenovo, XCC, Supermicro, AMI, MegaRAC, Asetek,
-CoolIT, and IceOtope are trademarks of their respective owners. Their
-mention in this project describes BMC / hardware compatibility and does
-not imply endorsement.
-
-## Support
-
-- **Bugs & feature requests:** [GitHub Issues](../../issues)
-- **Security:** open a GitHub security advisory on this repo
-- **Commercial inquiries:** open an issue tagged `commercial`
-
----
-
-**NEXUS v4.0** — Open thermal orchestration for open infrastructure.
+Built against the [DMTF Redfish standard](https://www.dmtf.org/standards/redfish).
+No endorsement by DMTF, Dell, HPE, Lenovo, or any other named hardware vendor
+is claimed — references in this repo describe technical compatibility only.

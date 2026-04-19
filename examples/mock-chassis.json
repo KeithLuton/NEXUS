@@ -1,0 +1,19 @@
+{
+  "poll_interval_s": 1,
+  "chassis": [
+    {
+      "chassis_id": "mock-chassis-01",
+      "bmc_host": "mock",
+      "bmc_user": "root",
+      "bmc_password": "",
+      "thermal_zones": [
+        {
+          "zone_id": "primary",
+          "sensor_paths": ["/mock/primary/temp"],
+          "pwm_path": "/mock/primary/pwm",
+          "thermal_profile": "balanced"
+        }
+      ]
+    }
+  ]
+}
