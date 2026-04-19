@@ -1,0 +1,30 @@
+# NEXUS v4.0 Helm values
+#
+# Deploy with:
+#   helm install nexus ./integrations/kubernetes/helm/ \
+#     --set bmc.target=192.168.1.100 \
+#     --set bmc.username=root
+
+image:
+  repository: ghcr.io/keithluton/nexus
+  tag: "4.0.0"
+  pullPolicy: IfNotPresent
+
+bmc:
+  target: ""          # BMC host or IP — required
+  username: "root"
+  # Password is injected via the nexus-bmc-secret Secret, not this file.
+
+poll:
+  intervalSeconds: 30
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+tolerations: []
+nodeSelector: {}

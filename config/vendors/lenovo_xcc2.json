@@ -1,0 +1,19 @@
+{
+  "vendor": "Lenovo",
+  "model": "ThinkSystem (XCC2 family)",
+  "bmc_type": "redfish",
+  "api_version": "1.8.0",
+  "status": "template",
+  "notes": "Template for Lenovo ThinkSystem servers running XCC2. Verify sensor paths for your specific model (SR650, SR950, etc.).",
+  "thermal_zones": [
+    {
+      "zone_id": "cpu_zone",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/0",
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/1"
+      ],
+      "pwm_path": "/redfish/v1/Chassis/1/Thermal",
+      "thermal_profile": "balanced"
+    }
+  ]
+}

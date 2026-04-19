@@ -1,0 +1,19 @@
+{
+  "vendor": "Supermicro",
+  "model": "X12 / X13 platform (Redfish BMC)",
+  "bmc_type": "redfish",
+  "api_version": "1.6.0",
+  "status": "template",
+  "notes": "Template for Supermicro X12/X13 systems exposing Redfish. Older Supermicro BMCs may require enabling Redfish in the web UI first.",
+  "thermal_zones": [
+    {
+      "zone_id": "cpu_zone",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/0",
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/1"
+      ],
+      "pwm_path": "/redfish/v1/Chassis/1/Thermal",
+      "thermal_profile": "balanced"
+    }
+  ]
+}

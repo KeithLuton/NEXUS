@@ -1,0 +1,19 @@
+{
+  "vendor": "Insyde",
+  "model": "Insyde OpenEdition BMC",
+  "bmc_type": "redfish",
+  "api_version": "1.9.0",
+  "status": "template",
+  "notes": "Template for systems running Insyde's OpenEdition BMC firmware. Follows OpenBMC Redfish conventions closely.",
+  "thermal_zones": [
+    {
+      "zone_id": "cpu_zone",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/chassis/Sensors/temperature_CPU0_Temp",
+        "/redfish/v1/Chassis/chassis/Sensors/temperature_CPU1_Temp"
+      ],
+      "pwm_path": "/redfish/v1/Chassis/chassis/Thermal",
+      "thermal_profile": "balanced"
+    }
+  ]
+}

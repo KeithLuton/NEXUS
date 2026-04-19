@@ -1,0 +1,19 @@
+{
+  "vendor": "HPE",
+  "model": "ProLiant (iLO 5 family)",
+  "bmc_type": "redfish",
+  "api_version": "1.6.0",
+  "status": "template",
+  "notes": "Template for iLO 5 based HPE ProLiant systems. Verify sensor paths against your specific model (DL380, DL385, etc.) before deploying.",
+  "thermal_zones": [
+    {
+      "zone_id": "cpu_zone",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/0",
+        "/redfish/v1/Chassis/1/Thermal#/Temperatures/1"
+      ],
+      "pwm_path": "/redfish/v1/Chassis/1/Thermal",
+      "thermal_profile": "balanced"
+    }
+  ]
+}

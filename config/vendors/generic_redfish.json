@@ -1,0 +1,16 @@
+{
+  "vendor": "Generic",
+  "model": "Redfish 1.0+ compliant",
+  "bmc_type": "redfish",
+  "api_version": "1.0.0",
+  "status": "fallback",
+  "notes": "Default profile used when no vendor-specific config matches. Probes /redfish/v1/Chassis and /redfish/v1/Systems to discover thermal zones.",
+  "thermal_zones": [
+    {
+      "zone_id": "chassis_default",
+      "sensor_paths": ["/redfish/v1/Chassis/1/Thermal"],
+      "pwm_path": null,
+      "thermal_profile": "balanced"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: nexus
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: nexus
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: nexus
+        release: {{ .Release.Name }}
+    spec:
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: nexus-agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NEXUS_BMC_TARGET
+              value: {{ .Values.bmc.target | quote }}
+            - name: NEXUS_BMC_USER
+              value: {{ .Values.bmc.username | quote }}
+            - name: NEXUS_BMC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-bmc
+                  key: password
+            - name: NEXUS_POLL_INTERVAL_S
+              value: {{ .Values.poll.intervalSeconds | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

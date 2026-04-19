@@ -1,0 +1,19 @@
+{
+  "vendor": "AMI",
+  "model": "MegaRAC SP-X",
+  "bmc_type": "redfish",
+  "api_version": "1.8.0",
+  "status": "template",
+  "notes": "Template for systems running AMI MegaRAC SP-X firmware. Common on Supermicro, Gigabyte, and various ODM platforms.",
+  "thermal_zones": [
+    {
+      "zone_id": "cpu_zone",
+      "sensor_paths": [
+        "/redfish/v1/Chassis/Self/Thermal#/Temperatures/0",
+        "/redfish/v1/Chassis/Self/Thermal#/Temperatures/1"
+      ],
+      "pwm_path": "/redfish/v1/Chassis/Self/Thermal",
+      "thermal_profile": "balanced"
+    }
+  ]
+}

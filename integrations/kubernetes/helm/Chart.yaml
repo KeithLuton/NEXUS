@@ -1,0 +1,16 @@
+apiVersion: v2
+name: nexus
+description: NEXUS v4.0 thermal orchestration agent (DaemonSet)
+type: application
+version: 0.1.0
+appVersion: "4.0.0"
+keywords:
+  - thermal
+  - orchestration
+  - bmc
+  - redfish
+  - hpc
+sources:
+  - https://github.com/KeithLuton/NEXUS
+maintainers:
+  - name: Keith Luton
