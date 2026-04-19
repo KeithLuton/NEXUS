@@ -131,7 +131,7 @@ See [IP Notice](docs/ip_notice.md) for full licensing terms.
 
 ## Citation & Credits
 
-NEXUS v4.0 includes contributions from:
+NEXUS v4.0 Built to integrate with :
 - iDRAC team (thermal modeling)
 - Redfish Consortium (standard compliance)
 - OpenBMC community (generic BMC support)
